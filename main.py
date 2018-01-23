@@ -32,46 +32,44 @@ class Parser(object):
 
 
 if __name__ == '__main__':
-    # Make 3 parts (rows, panels and body) of web-page and save items in it
     rows = ''
     panels = ''
     panel_number = 1
     id_number = 1
     r_number = 0
-    # db.add_category_table()    # fill category table
-
+    # db.add_category_table()    # fill category table, call one time
     parser = Parser()
-
     for category in DATA['categories']:
         category_ids = parser.get_category_ids(category)
         for item in category_ids:
             item_detail = parser.get_item_details(item)
             title = item_detail['title'].replace('\'', '"')
+            # Try insert data in "item" table
             try:
-                db.insert_item(category,                                    # Insert in "item" table
+                db.insert_item(category,
                                item_detail['id'],
                                item_detail['by'],
                                item_detail['score'],
                                item_detail['time'],
                                title,
                                item_detail['type'],
-                               DATA['item_url'].format(item_detail['id'])
-                )
-            except Exception:
+                               DATA['item_url'].format(item_detail['id']))
+            except:
                 logger = logging.getLogger()
                 logger.setLevel(logging.WARNING)
-
             rows += row.format(row_text=title, collapse=id_number) + '\n'
             id_number += 1
             r_number += 1
-            if r_number == 3:                                               # Delete it to parse all items
+
+            if r_number == 2:        # Delete it to parse all items
                 break
         r_number = 0
-        panels += panel.format(category_name=category, rows=rows, collapse=panel_number) + '\n'
+        panels += panel.format(category_name=category, rows=rows,
+                               collapse=panel_number) + '\n'
         panel_number += 1
         rows = ''
 
-    # Make web-page and write in html-doc
+    # Make web-page and write it in html-doc
     html = body.format(body=panels)
     with open('results/index.html', 'w', encoding='windows-1251') as doc:
         doc.write(html)
